@@ -1,0 +1,492 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Choose language" xml:space="preserve">
+    <value>Выберите язык</value>
+  </data>
+  <data name="Администратор" xml:space="preserve">
+    <value>Администратор</value>
+  </data>
+  <data name="Администрирование" xml:space="preserve">
+    <value>Администрирование</value>
+  </data>
+  <data name="Активные" xml:space="preserve">
+    <value>Активные</value>
+  </data>
+  <data name="Версия" xml:space="preserve">
+    <value>Версия</value>
+  </data>
+  <data name="Внимание" xml:space="preserve">
+    <value>Внимание</value>
+  </data>
+  <data name="Восстановить" xml:space="preserve">
+    <value>Восстановить</value>
+  </data>
+  <data name="Все фирмы" xml:space="preserve">
+    <value>Все фирмы</value>
+  </data>
+  <data name="Вход" xml:space="preserve">
+    <value>Вход</value>
+  </data>
+  <data name="Вход в систему" xml:space="preserve">
+    <value>Вход в систему</value>
+  </data>
+  <data name="Вы действительно хотие восстановить" xml:space="preserve">
+    <value>Вы действительно хотие восстановить</value>
+  </data>
+  <data name="Вы действительно хотие удалить" xml:space="preserve">
+    <value>Вы действительно хотие удалить</value>
+  </data>
+  <data name="Вы действительно хотие удалить из базы" xml:space="preserve">
+    <value>Вы действительно хотие удалить из базы</value>
+  </data>
+  <data name="Вы действительно хотие удалить файл" xml:space="preserve">
+    <value>Вы действительно хотие удалить файл</value>
+  </data>
+  <data name="Выберите заказчика" xml:space="preserve">
+    <value>Выберите заказчика</value>
+  </data>
+  <data name="Выгрузка" xml:space="preserve">
+    <value>Выгрузка</value>
+  </data>
+  <data name="Выход" xml:space="preserve">
+    <value>Выход</value>
+  </data>
+  <data name="Да" xml:space="preserve">
+    <value>Да</value>
+  </data>
+  <data name="Данные отсутствуют" xml:space="preserve">
+    <value>Данные отсутствуют</value>
+  </data>
+  <data name="Данный пароль нельзя использовать" xml:space="preserve">
+    <value>Данный пароль нельзя использовать</value>
+  </data>
+  <data name="Дата" xml:space="preserve">
+    <value>Дата</value>
+  </data>
+  <data name="Дата заказа" xml:space="preserve">
+    <value>Дата заказа</value>
+  </data>
+  <data name="Дата исполнения заказа просрочена" xml:space="preserve">
+    <value>Дата исполнения заказа просрочена</value>
+  </data>
+  <data name="Дата поставки" xml:space="preserve">
+    <value>Дата поставки</value>
+  </data>
+  <data name="Добавить" xml:space="preserve">
+    <value>Добавить</value>
+  </data>
+  <data name="Добавление" xml:space="preserve">
+    <value>Добавление</value>
+  </data>
+  <data name="Журнал изменений" xml:space="preserve">
+    <value>Журнал изменений</value>
+  </data>
+  <data name="Завод воды &quot;ЮНИКС&quot; в Чимкенте" xml:space="preserve">
+    <value>Завод воды "ЮНИКС" в Чимкенте</value>
+  </data>
+  <data name="Завод преформ Юни Пак" xml:space="preserve">
+    <value>Завод преформ Юни Пак</value>
+  </data>
+  <data name="Загрузка данных" xml:space="preserve">
+    <value>Загрузка данных</value>
+  </data>
+  <data name="Заказ запчастей" xml:space="preserve">
+    <value>Заказ запчастей</value>
+  </data>
+  <data name="Заказ исполнен и поступил заказчику" xml:space="preserve">
+    <value>Заказ исполнен и поступил заказчику</value>
+  </data>
+  <data name="Заказ исполнен с замечаниями" xml:space="preserve">
+    <value>Заказ исполнен с замечаниями</value>
+  </data>
+  <data name="Заказ на складе Gisal" xml:space="preserve">
+    <value>Заказ на складе Gisal</value>
+  </data>
+  <data name="Заказ отгружен со склада" xml:space="preserve">
+    <value>Заказ отгружен со склада</value>
+  </data>
+  <data name="Заказ отменен" xml:space="preserve">
+    <value>Заказ отменен</value>
+  </data>
+  <data name="Заказ принят" xml:space="preserve">
+    <value>Заказ принят</value>
+  </data>
+  <data name="Заказ размещён" xml:space="preserve">
+    <value>Заказ размещён</value>
+  </data>
+  <data name="Заказ создан" xml:space="preserve">
+    <value>Заказ создан</value>
+  </data>
+  <data name="Заказ успешно восстановлен" xml:space="preserve">
+    <value>Заказ успешно восстановлен</value>
+  </data>
+  <data name="Заказ успешно изменен" xml:space="preserve">
+    <value>Заказ успешно изменен</value>
+  </data>
+  <data name="Заказ успешно создан" xml:space="preserve">
+    <value>Заказ успешно создан</value>
+  </data>
+  <data name="Заказ успешно удален" xml:space="preserve">
+    <value>Заказ успешно удален</value>
+  </data>
+  <data name="Заказ успешно удален из базы" xml:space="preserve">
+    <value>Заказ успешно удален из базы</value>
+  </data>
+  <data name="Заказчик" xml:space="preserve">
+    <value>Заказчик</value>
+  </data>
+  <data name="Заказы" xml:space="preserve">
+    <value>Заказы</value>
+  </data>
+  <data name="Запчасти Gisal" xml:space="preserve">
+    <value>Запчасти Gisal</value>
+  </data>
+  <data name="Изменить" xml:space="preserve">
+    <value>Изменить</value>
+  </data>
+  <data name="Изменить пароль" xml:space="preserve">
+    <value>Изменить пароль</value>
+  </data>
+  <data name="Иметь минимум 8 символов в длину" xml:space="preserve">
+    <value>Иметь минимум 8 символов в длину</value>
+  </data>
+  <data name="Имя пользователя" xml:space="preserve">
+    <value>Имя пользователя</value>
+  </data>
+  <data name="Карточка заказа" xml:space="preserve">
+    <value>Карточка заказа</value>
+  </data>
+  <data name="Код Gisal" xml:space="preserve">
+    <value>Код Gisal</value>
+  </data>
+  <data name="Код линии" xml:space="preserve">
+    <value>Код линии</value>
+  </data>
+  <data name="Код машины" xml:space="preserve">
+    <value>Код машины</value>
+  </data>
+  <data name="Код поставщика Gisal" xml:space="preserve">
+    <value>Код поставщика Gisal</value>
+  </data>
+  <data name="Количество" xml:space="preserve">
+    <value>Количество</value>
+  </data>
+  <data name="Копировать" xml:space="preserve">
+    <value>Копировать</value>
+  </data>
+  <data name="Копия заказа" xml:space="preserve">
+    <value>Копия заказа</value>
+  </data>
+  <data name="Наблюдатель" xml:space="preserve">
+    <value>Наблюдатель</value>
+  </data>
+  <data name="Наименование заказа" xml:space="preserve">
+    <value>Наименование заказа</value>
+  </data>
+  <data name="Нет" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+  <data name="Нет изменений в карточке" xml:space="preserve">
+    <value>Нет изменений в карточке</value>
+  </data>
+  <data name="Номер модуля" xml:space="preserve">
+    <value>№ модуля</value>
+  </data>
+  <data name="Общее количество файлов не должно превышать 5шт" xml:space="preserve">
+    <value>Общее количество файлов не должно превышать 5шт</value>
+  </data>
+  <data name="Обычный" xml:space="preserve">
+    <value>Обычный</value>
+  </data>
+  <data name="Один специальный символ, по крайней мере" xml:space="preserve">
+    <value>Один специальный символ, по крайней мере</value>
+  </data>
+  <data name="Одну заглавную букву, по крайней мере" xml:space="preserve">
+    <value>Одну заглавную букву, по крайней мере</value>
+  </data>
+  <data name="Одну прописную букву, по крайней мере" xml:space="preserve">
+    <value>Одну прописную букву, по крайней мере</value>
+  </data>
+  <data name="Одну цифру, по крайней мере" xml:space="preserve">
+    <value>Одну цифру, по крайней мере</value>
+  </data>
+  <data name="Оператор" xml:space="preserve">
+    <value>Оператор</value>
+  </data>
+  <data name="Описание" xml:space="preserve">
+    <value>Описание</value>
+  </data>
+  <data name="Отмена" xml:space="preserve">
+    <value>Отмена</value>
+  </data>
+  <data name="Отменить заказ" xml:space="preserve">
+    <value>Отменить заказ</value>
+  </data>
+  <data name="Отправить SMS" xml:space="preserve">
+    <value>Отправить SMS</value>
+  </data>
+  <data name="Очистить загруженные файлы" xml:space="preserve">
+    <value>Очистить загруженные файлы</value>
+  </data>
+  <data name="Пароли не совпадают" xml:space="preserve">
+    <value>Пароли не совпадают</value>
+  </data>
+  <data name="Пароль" xml:space="preserve">
+    <value>Пароль</value>
+  </data>
+  <data name="Пароль должен" xml:space="preserve">
+    <value>Пароль должен</value>
+  </data>
+  <data name="Пароль слишком прост" xml:space="preserve">
+    <value>Пароль слишком прост</value>
+  </data>
+  <data name="Повторить пароль" xml:space="preserve">
+    <value>Повторить пароль</value>
+  </data>
+  <data name="Подразделение" xml:space="preserve">
+    <value>Подразделение</value>
+  </data>
+  <data name="Подразделение с таким именем уже существует в базе" xml:space="preserve">
+    <value>Подразделение с таким именем уже существует в базе</value>
+  </data>
+  <data name="Подразделение успешно восстановлено" xml:space="preserve">
+    <value>Подразделение успешно восстановлено</value>
+  </data>
+  <data name="Подразделение успешно изменено" xml:space="preserve">
+    <value>Подразделение успешно изменено</value>
+  </data>
+  <data name="Подразделение успешно создано" xml:space="preserve">
+    <value>Подразделение успешно создано</value>
+  </data>
+  <data name="Подразделение успешно удалено" xml:space="preserve">
+    <value>Подразделение успешно удалено</value>
+  </data>
+  <data name="Подразделение успешно удалено из базы" xml:space="preserve">
+    <value>Подразделение успешно удалено из базы</value>
+  </data>
+  <data name="Подразделения" xml:space="preserve">
+    <value>Подразделения</value>
+  </data>
+  <data name="Подтверждаю отмену заказа" xml:space="preserve">
+    <value>Подтверждаю отмену заказа</value>
+  </data>
+  <data name="Подтверждаю, данные введены верно" xml:space="preserve">
+    <value>Подтверждаю, данные введены верно</value>
+  </data>
+  <data name="Пользователи" xml:space="preserve">
+    <value>Пользователи</value>
+  </data>
+  <data name="Пользователь не найден или не верен пароль" xml:space="preserve">
+    <value>Пользователь не найден или не верен пароль</value>
+  </data>
+  <data name="Пользователь с таким именем уже существует в базе" xml:space="preserve">
+    <value>Пользователь с таким именем уже существует в базе</value>
+  </data>
+  <data name="Пользователь удален" xml:space="preserve">
+    <value>Пользователь удален</value>
+  </data>
+  <data name="Пользователь успешно восстановлен" xml:space="preserve">
+    <value>Пользователь успешно восстановлен</value>
+  </data>
+  <data name="Пользователь успешно изменен" xml:space="preserve">
+    <value>Пользователь успешно изменен</value>
+  </data>
+  <data name="Пользователь успешно создан" xml:space="preserve">
+    <value>Пользователь успешно создан</value>
+  </data>
+  <data name="Пользователь успешно удален" xml:space="preserve">
+    <value>Пользователь успешно удален</value>
+  </data>
+  <data name="Пользователь успешно удален из базы" xml:space="preserve">
+    <value>Пользователь успешно удален из базы</value>
+  </data>
+  <data name="Поставщик" xml:space="preserve">
+    <value>Поставщик</value>
+  </data>
+  <data name="Превышено количество попыток продления даты поставки" xml:space="preserve">
+    <value>Превышено количество попыток продления даты поставки</value>
+  </data>
+  <data name="Примечание" xml:space="preserve">
+    <value>Примечание</value>
+  </data>
+  <data name="Просмотр" xml:space="preserve">
+    <value>Просмотр</value>
+  </data>
+  <data name="Разработчик" xml:space="preserve">
+    <value>Разработчик</value>
+  </data>
+  <data name="Редактирование" xml:space="preserve">
+    <value>Редактирование</value>
+  </data>
+  <data name="Роль" xml:space="preserve">
+    <value>Роль</value>
+  </data>
+  <data name="Сбросить счетчик продления даты поставки" xml:space="preserve">
+    <value>Сбросить счетчик продления даты поставки</value>
+  </data>
+  <data name="Скачать" xml:space="preserve">
+    <value>Скачать</value>
+  </data>
+  <data name="Скачать все" xml:space="preserve">
+    <value>Скачать все</value>
+  </data>
+  <data name="Скачать все файлы" xml:space="preserve">
+    <value>Скачать все файлы</value>
+  </data>
+  <data name="Смена пароля" xml:space="preserve">
+    <value>Смена пароля</value>
+  </data>
+  <data name="Сообщение" xml:space="preserve">
+    <value>Сообщение</value>
+  </data>
+  <data name="Сопроводительные документы" xml:space="preserve">
+    <value>Сопроводительные документы</value>
+  </data>
+  <data name="Сохранить" xml:space="preserve">
+    <value>Сохранить</value>
+  </data>
+  <data name="Справка" xml:space="preserve">
+    <value>Справка</value>
+  </data>
+  <data name="Срочность" xml:space="preserve">
+    <value>Срочность</value>
+  </data>
+  <data name="Срочный" xml:space="preserve">
+    <value>Срочный</value>
+  </data>
+  <data name="Статус" xml:space="preserve">
+    <value>Статус</value>
+  </data>
+  <data name="Удалённые" xml:space="preserve">
+    <value>Удалённые</value>
+  </data>
+  <data name="Удаление файла выполнено успешно" xml:space="preserve">
+    <value>Удаление файла выполнено успешно</value>
+  </data>
+  <data name="Удалить" xml:space="preserve">
+    <value>Удалить</value>
+  </data>
+  <data name="Удалять файлы может только администратор" xml:space="preserve">
+    <value>Удалять файлы может только администратор</value>
+  </data>
+  <data name="Файл или общее количество файлов не должно превышать 5мб" xml:space="preserve">
+    <value>Файл или общее количество файлов не должно превышать 5мб</value>
+  </data>
+</root>

@@ -1,0 +1,116 @@
+﻿@inject IStringLocalizer<Resource> localizer
+<EditForm Model="uModel" OnValidSubmit="@ModalOk">
+    <DataAnnotationsValidator />
+    <div class="modal fade show" role="dialog" aria-modal="true" tabindex="-1" style="display:block;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!--Modal Header-->
+                <div class="modal-header text-center">
+                    <h4 class="modal-title w-100 font-weight-bold">@Title</h4>
+                    <button type="button" class="btn-close" aria-label="Close" @onclick="@ModalCancel"></button>
+                </div>
+                <!--Modal Body-->
+                <div class="modal-body mx-3">
+                    <div class="row md-2">
+                        <div class="col col-md-6">
+                            <label>@localizer["Имя пользователя"]</label>
+                            <InputText class="form-control" @bind-Value="@uModel.Username" />
+                            <ValidationMessage For="(() => uModel.Username)" />
+                        </div>
+                        <div class="col col-md-6 mb-2">
+                            <label>@localizer["Роль"]</label>
+                            <InputSelect class="form-control" @bind-Value="@uModel.Roleid">
+                                @foreach (var item in RoleList)
+                                {
+                                    <option value="@item.Key">@localizer[item.Value]</option>
+                                }
+                            </InputSelect>
+                            <ValidationMessage For="(() => uModel.Roleid)" />
+                        </div>
+                        @if (uModel.Roleid != 3 & uModel.Roleid != 4 & uModel.Roleid != 0)
+                        {
+                            <div class="col col-md-6"></div>
+                            <div class="col col-md-6 mb-2">
+                                <label>@localizer["Подразделение"]</label>
+                                <InputSelect class="form-control" @bind-Value="@uModel.Divisionid">
+                                    @foreach (var item in DivisionList)
+                                    {
+                                        <option value="@item.Key">@item.Value</option>
+                                    }
+                                </InputSelect>
+                                <ValidationMessage For="(() => uModel.Divisionid)" />
+                            </div>
+                        }
+                    </div>
+
+                    <div class="row mb-2">
+                        <div class="col col-md-6">
+                            <label>@localizer["Пароль"]</label>
+                            <InputText type="password" class="form-control" @bind-Value="@uModel.Pass1" />
+                            <ValidationMessage For="(() => uModel.Pass1)" />
+                        </div>
+                        <div class="col col-md-6">
+                            <label>@localizer["Повторить пароль"]</label>
+                            <InputText type="password" class="form-control" @bind-Value="@uModel.Pass2" />
+                            <ValidationMessage For="(() => uModel.Pass2)" />
+                        </div>
+                    </div>
+                    <hr />
+                    <span>
+                        <small>
+                            <strong>@localizer["Пароль должен"]:</strong><br /><em>
+                                1. @localizer["Иметь минимум 8 символов в длину"].<br />
+                                2. @localizer["Одну заглавную букву, по крайней мере"].<br />
+                                3. @localizer["Одну прописную букву, по крайней мере"].<br />
+                                4. @localizer["Одну цифру, по крайней мере"].<br />
+                                5. @localizer["Один специальный символ, по крайней мере"].<br />
+                            </em>
+                        </small>
+                    </span>
+                </div>
+                <!--Modal Footer-->
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success" style="width: 110px;">@localizer["Сохранить"]</button>
+                    <button type="button" class="btn btn-secondary" style="width: 110px;" @onclick="@ModalCancel">@localizer["Отмена"]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</EditForm>
+<ToastNotification IsOpen="@Toast.IsOpen" Text="@Toast.RenderText" Level="@Toast.Level"></ToastNotification>
+@code {
+    [Parameter] public EventCallback<bool> OnClose { get; set; }
+    [Parameter] public string Title { get; set; }
+    [Parameter] public UserModel Row { get; set; }
+    private Dictionary<Int64, string> RoleList { get; set; }
+    private Dictionary<Int64, string> DivisionList { get; set; }
+    UserModel uModel = new();
+    [CascadingParameter] public MainLayout Layout { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        uModel.IsNew = Mode.Button == ModeButton.Add ? true : false;
+        await InvokeAsync(() => RoleList = uModel.GetListRoles(Layout.Role));
+        DivisionList = uModel.GetListDevisions();      
+        if (Mode.Button == ModeButton.Edit)
+        {
+            uModel.Id = Row.Id;
+            uModel.Username = Row.Username;
+            uModel.Divisionid = Row.Divisionid;
+            uModel.Deleted = Row.Deleted;
+            uModel.Roleid = Row.Roleid;
+            uModel.Password = Row.Password;
+        }
+        else
+            uModel.Deleted = "F";
+    }
+    private async Task ModalOk()
+    {
+        if (!uModel.AddOrEdit())
+        {
+            await Toast.Notification(@<span>@localizer[BaseModel.MyMessage]!</span>, ToastLevel.Info);
+        }
+        else
+            await OnClose.InvokeAsync(true);
+    }
+    private Task ModalCancel() => OnClose.InvokeAsync(false);
+}

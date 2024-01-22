@@ -1,0 +1,47 @@
+﻿@inject IStringLocalizer<Resource> localizer
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">@localizer["Запчасти Gisal"]</a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="fa-solid fa-house pe-3" aria-hidden="true"></span> @localizer["Справка"]
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="Orders">
+                <span class="fa-solid fa-cart-shopping pe-3"></span> @localizer["Заказ запчастей"]
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="Logs">
+                <span class="fa-solid fa-book pe-3"></span> @localizer["Журнал изменений"]
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="Admin">
+                <span class="fa-solid fa-lock pe-3"></span> @localizer["Администрирование"]
+            </NavLink>
+        </div>
+
+    </nav>
+</div>
+<div class="line"></div>
+
+@code {
+    private bool collapseNavMenu = true;
+    private string NavMenuCssClass => collapseNavMenu ? "collapse" : "";
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

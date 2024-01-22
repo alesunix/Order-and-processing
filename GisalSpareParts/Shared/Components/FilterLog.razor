@@ -1,0 +1,50 @@
+﻿<tr style="border-style: hidden;">
+    <td>
+        <div class="input-group" style="max-width:600px;">
+            <input type="date" max="2100-01-01" class="form-control" @bind-value="Model.StartDate" />
+            <input type="date" max="2100-01-01" class="form-control" @bind-value="Model.EndDate" />
+            <button @onclick="@FilterDate" class="input-group-text fa-solid fa-filter"></button>
+        </div>
+    </td>
+    <td colspan="2">
+        <div class="input-group">
+            <select class="form-control" @onchange="@FilterUsers" value="@Model.Username">
+                <option value=""></option>
+                @foreach (var item in UserList)
+                {
+                    <option value="@item">@item</option>
+                }
+            </select>
+        </div>
+    </td>
+    <td>
+        <div>
+            <button @onclick="(()=>ClearFilters(new ChangeEventArgs {Value=string.Empty}))" class="form-control pt-3 fa-solid fa-filter-circle-xmark"></button>
+        </div>
+    </td>
+</tr>
+
+@code {
+    [Parameter] public EventCallback<List<LogsModel>> OnChange { get; set; }
+    [Parameter] public LogsModel Model { get; set; }
+    private List<string> UserList { get; set; }    
+    protected override void OnInitialized()
+    {
+        UserList = Model.GetUsers();
+        Model.StartDate = DateTime.Now.AddMonths(-1);
+        Model.EndDate = DateTime.Now;
+    }
+    private Task Filter() => OnChange.InvokeAsync(Model.GetDataLogs());
+    void FilterDate() => Filter();
+    void FilterUsers(ChangeEventArgs e) { Model.Username = e.Value.ToString(); Filter(); }
+    void ClearFilters(ChangeEventArgs e)
+    {
+        if (e.Value.ToString() == string.Empty)
+        {
+            Model.Username = string.Empty;
+            Model.StartDate = DateTime.Now.AddMonths(-1);
+            Model.EndDate = DateTime.Now;
+        }
+        Filter();
+    }
+}

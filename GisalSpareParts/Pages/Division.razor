@@ -1,0 +1,196 @@
+﻿@page "/division"
+@attribute [Authorize]
+@inject IStringLocalizer<Resource> localizer
+
+<div class="container-fluid position-fixed bg-light py-3 pt-5 border-start border-end border-bottom" style="z-index: 2;width: 85.5%;margin-top: -24px;">
+    <div class="row">
+        <div class="col col-md-4 btn-group" role="group">
+            <button class="btn w-50 btn-primary me-2" @onclick="@Add"><i class="fa-solid fa-plus pe-2"></i>@localizer["Добавить"]</button>
+            <button disabled="@IsDisabledEdit" class="btn w-50 btn-secondary me-2" @onclick="@Edit"><i class="fa-solid fa-pen pe-2"></i>@localizer["Изменить"]</button>
+            @if (VisibleDel == "visible")
+            {
+                <button disabled="@IsDisabledDelete" class="btn w-50 btn-danger me-2 @VisibleDel" @onclick="@Delete"><i class="fa-solid fa-trash pe-2"></i>@localizer["Удалить"]</button>
+            }
+            else
+            {
+                <button disabled="@IsDisabledDelete" class="btn w-50 btn-info me-2 @VisibleRec" @onclick="@Recovery"><i class="fa-solid fa-reply pe-2"></i>@localizer["Восстановить"]</button>
+            }
+        </div>
+        <div class="col text-end">
+            @if (Table != null && Table.Count != 0)
+            {
+                if (Table[0].Deleted == "F")
+                {
+                    <button class="btn btn-dark ms-2 text-nowrap" @onclick="@(()=>{IsDeleted = !IsDeleted; RefreshTable();})"><i class="oi oi-trash pe-2"></i>@localizer["Удалённые"]</button>
+                }
+                else
+                {
+                    <button class="btn btn-dark ms-2" @onclick="@(()=>{IsDeleted = !IsDeleted; RefreshTable();})"><i class="oi oi-eye pe-2"></i>@localizer["Активные"]</button>
+                }
+            }
+            else
+            {
+                <button class="btn btn-dark ms-2" @onclick="@(()=>{IsDeleted = !IsDeleted; RefreshTable();})"><i class="oi oi-eye pe-2"></i>@localizer["Активные"]</button>
+            }
+        </div>
+    </div>
+</div>
+<br />
+
+<!--User Table-->
+<div @ref="@Reference" class="table-solid ms-5 me-5" style="margin-top: 50px;">
+    <table class="table table-sm table-striped table-hover align-middle caption-top">
+        <thead class="thead-primary position-sticky" style="z-index: 2;top:155px;">
+            <tr>
+                <th class="ps-5">@localizer["Подразделение"]</th>
+                <th class="ps-5">@localizer["Описание"]</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Table == null)
+            {
+                <ToastNotification Data="Load" />
+            }
+            else if (Table.Count == 0)
+            {
+                <ToastNotification Data="NoData" />
+            }
+            else
+            {
+                foreach (DivisionModel item in Table)
+                {
+                    Int64 id = item.Id;
+                    string bg = (id == SelectedId) ? "selected-row" : "";
+                    <tr class="hover-row @bg" @onclick="@(()=>RowClicked(id))" @key="item">
+                        <td hidden>@item.Id</td>
+                        <td class="ps-5">@item.Name</td>
+                        <td class="ps-5">@localizer[item.Note]</td>
+                        <td></td>
+                        <td>
+                            @if (item.Deleted == "T")
+                            {
+                                if (Layout.Role == "DEVEL")
+                                {
+                                    <button class="btn btn-danger me-2" @onclick="@Delete">@localizer["Удалить"]</button>
+                                }
+                                else
+                                {
+                                    <i class="fa-solid fa-trash h5 float-end" style="color:brown;"></i>
+                                }
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+<ToastNotification IsOpen="@Toast.IsOpen" Text="@Toast.RenderText" Level="@Toast.Level"></ToastNotification>
+@if (IsModalOpen)
+{
+    <ModalDivision Title="@Title" Row="@Row" OnClose="@CloseModal"></ModalDivision>
+}
+<ModalDialog IsOpen="@IsModalDialogOpen" Text="@RenderText" Title="@Title" OnClose="@CloseModal"></ModalDialog>
+
+@code {
+    private bool IsModalOpen { get; set; }
+    private bool IsModalDialogOpen { get; set; }
+    private bool IsDisabledEdit { get; set; } = true;
+    private bool IsDisabledDelete { get; set; } = true;
+    private string VisibleDel { get; set; } = "visible";
+    private string VisibleRec { get; set; } = "invisible";
+    private bool IsDeleted { get; set; }
+    private Int64 SelectedId { get; set; }
+    private string Title { get; set; }
+    private RenderFragment RenderText { get; set; }
+    private List<DivisionModel> Table { get; set; }
+    private DivisionModel Row { get; set; }
+    DivisionModel Model = new();
+    public ElementReference Reference { get; set; }
+    [CascadingParameter] public MainLayout Layout { get; set; }
+    [CascadingParameter] private Task<AuthenticationState> AuthStat { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        Layout.Title = localizer["Подразделения"];
+        Layout.Page = this;
+        await Task.Run(RefreshTable);
+    }
+    void RefreshTable()
+    {
+        Table = Model.GetDataSubdevision();
+        string TF = IsDeleted ? "T" : "F";
+        Table = Table.Where(x => x.Deleted == TF).ToList();
+    }
+    private void RowClicked(Int64 id)
+    {
+        Model.Id = SelectedId = id;
+        IsDisabledEdit = IsDisabledDelete = (id == SelectedId) ? false : true;
+        RefreshTable();
+        Row = Table.Where(x => x.Id == SelectedId).LastOrDefault();
+        if (Row.Deleted == "F") { VisibleDel = "visible"; VisibleRec = "invisible"; }
+        else { VisibleDel = "invisible"; VisibleRec = "visible"; IsDisabledEdit = true; }
+    }
+    public void Add()
+    {
+        SetModalSettings(ModeButton.Add, localizer["Добавление"]);
+    }
+    public void Edit()
+    {
+        if (SelectedId > 0 && !IsDisabledEdit)
+            SetModalSettings(ModeButton.Edit, localizer["Редактирование"]);
+    }
+    public void Delete()
+    {
+        if (Row == null) return;
+        if (SelectedId > 0 && !IsDisabledDelete && VisibleDel == "visible")
+        SetModalDialogSettings(ModeButton.MarkDelRec, localizer["Внимание"]!, @<span>@localizer["Вы действительно хотие удалить"]?<br />@Row.Name</span>, "T");
+        else if (SelectedId > 0)
+            SetModalDialogSettings(ModeButton.Delete, localizer["Внимание"]!, @<span>@localizer["Вы действительно хотие удалить из базы"]?<br />@Row.Name</span>);
+    }
+    public void Recovery()
+    {
+        if (Row == null) return;
+        if (SelectedId > 0 && !IsDisabledDelete && VisibleRec == "visible")
+            SetModalDialogSettings(ModeButton.MarkDelRec, localizer["Внимание"]!, @<span>@localizer["Вы действительно хотие восстановить"]?<br />@Row.Name</span>, "F");
+    }
+    private void SetModalSettings(ModeButton modeButton, string title)
+    {
+        if (!IsModalOpen)
+        {
+            Mode.Button = modeButton;
+            IsModalOpen = true;
+            Title = title;
+        }
+    }
+    private void SetModalDialogSettings(ModeButton modeButton, string title, RenderFragment renderText = null, string deleted = null)
+    {
+        Mode.Button = modeButton;
+        IsModalDialogOpen = true;
+        Title = title;
+        RenderText = renderText;
+        Model.Deleted = deleted;
+    }
+    private async Task CloseModal(bool accepted)
+    {
+        if (accepted)
+        {
+            if (Mode.Button == ModeButton.MarkDelRec || Mode.Button == ModeButton.Delete)
+            {
+                Model.DeleteOrRecovery();
+            }
+            RefreshTable();
+            IsModalDialogOpen = false;
+            IsModalOpen = false;
+            await Toast.Notification(@<span>@localizer[BaseModel.MyMessage]!</span>, ToastLevel.Success);
+        }
+        else
+        {
+            IsModalDialogOpen = false;
+            IsModalOpen = false;
+        }
+        await Task.Run(() => Reference.FocusAsync());
+        StateHasChanged();
+    }
+}

@@ -1,0 +1,107 @@
+﻿@inherits LayoutComponentBase
+@inject AuthenticationStateProvider authStateProvider
+@inject NavigationManager NavigationManager
+@inject IStringLocalizer<Resource> localizer
+
+<PageTitle>Запчасти Gisal</PageTitle>
+
+<CascadingValue Value="this">
+    <div @ref="@Reference" tabindex="0" @onkeyup="@HotKeys" class="page">
+        <div class="mySidebar">
+            <NavMenu />
+        </div>
+
+        <main>
+            <div class="top-row px-4 justify-content-between">
+                <div class="col">
+                    <h4>@Title</h4>
+                </div>
+                <div class="col text-end">
+                    <span class="pe-3">@Login</span>
+                    @if (Login != null)
+                    {
+                        <button type="button" class="btn btn-outline-dark btn-sm" @onclick="Logout"><i class="fa-solid fa-right-to-bracket pe-2"></i>@localizer["Выход"]</button>
+                    }
+                </div>
+            </div>
+
+            <article class="content py-4">
+                @Body
+            </article>           
+        </main>
+    </div>
+</CascadingValue>
+
+@code {
+    public object Page { get; set; }
+    private ElementReference Reference;
+    public int Id { get; set; }
+    public string Login { get; set; }
+    public string Role { get; set; }
+    public string RoleName { get; set; }
+    public string Title
+    {
+        get => title;
+        set
+        {
+            title = value;
+            InvokeAsync(() => StateHasChanged());
+        }
+    }
+    private string title;
+    UserModel uModel = new();
+    [CascadingParameter] private Task<AuthenticationState> AuthStat { get; set; }
+    protected override async Task OnAfterRenderAsync(bool firstRender)/// После отрисовки компонента
+    {
+        var auth = await AuthStat;
+        Id = Convert.ToInt32(auth.User.FindFirstValue(ClaimTypes.NameIdentifier));
+        Login = auth.User.FindFirstValue(ClaimTypes.Name);
+        Role = auth.User.FindFirstValue(ClaimTypes.Role);
+        RoleName = Role != null ? uModel.GetRoleName(Role) : null;
+        if (firstRender)
+        {
+            await InvokeAsync(() => StateHasChanged());
+        }
+    }
+    private async Task Logout()
+    {
+        var sp = (GisalSpareParts.Authentication.Authentication)authStateProvider;
+        await sp.UpdateAuthenticationState(null);
+        Login = null;
+    }
+    void HotKeys(KeyboardEventArgs e)
+    {
+        if (e.CtrlKey == true) Condition(e.Key);
+    }
+    private void Condition(string key)
+    {
+        if (Title == localizer["Пользователи"])
+        {
+            if (key == "1")
+                ((Pages.Users)Page).Add();
+            else if (key == "4")
+                ((Pages.Users)Page).Edit();
+            else if (key == "5")
+                ((Pages.Users)Page).Delete();
+            else if (key == "6")
+                ((Pages.Users)Page).Recovery();
+            ((Pages.Users)Page).Reference = Reference;
+        }
+        if (Title == localizer["Заказы"])
+        {
+            if (key == "1")
+                ((Pages.Orders)Page).Add();
+            else if (key == "2")
+                ((Pages.Orders)Page).Copy();
+            else if (key == "3")
+                ((Pages.Orders)Page).View();
+            else if (key == "4")
+                ((Pages.Orders)Page).Edit();
+            else if (key == "5")
+                ((Pages.Orders)Page).Delete();
+            else if (key == "6")
+                ((Pages.Orders)Page).Recovery();
+            ((Pages.Orders)Page).Reference = Reference;
+        }
+    }
+}

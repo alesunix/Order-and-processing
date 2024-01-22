@@ -1,0 +1,386 @@
+﻿@page "/orders"
+@attribute [Authorize]
+@inject IJSRuntime JS
+@inject IStringLocalizer<Resource> localizer
+
+<EditForm Model="oModel">
+    <div class="container-fluid position-sticky bg-light py-3 pt-5 border-start border-end border-bottom" style="z-index: 2;margin-top: -24px;top:56px;">
+        <div class="row img-thumbnail ms-1 mb-2" style="background-color: #fffcf4; margin-top: -45px;">
+            <div class="col col-md-10">
+                @if (oModel.Division != null)
+                {
+                    string division = oModel.Division.ToString();
+                    <label class="h5">@localizer["Заказчик"]: @localizer[division]</label>
+                }
+            </div>
+            @if (Layout.Role == "PROVI" || Layout.Role == "DEVEL")
+            {
+                <div class="col">
+                    <select class="form-control" @onchange="@FilterDivision" value="@oModel.Divisionid">
+                        <option value="0">@localizer["Выберите заказчика"]</option>
+                        @foreach (var item in DivisionList)
+                        {
+                            <option value="@item.Key">@item.Value</option>
+                        }
+                    </select>
+                </div>
+            }
+        </div>
+        <div class="row">
+            <div class="col col-md-8 btn-group" role="group">
+                <button disabled="@IsDisabledAdd" class="btn w-50 btn-primary me-2" @onclick="@Add"><i class="fa-solid fa-plus pe-2"></i>@localizer["Добавить"]</button>
+                <button disabled="@IsDisabledCopy" class="btn w-50 btn-primary me-2" @onclick="@Copy"><i class="fa-solid fa-copy pe-2"></i>@localizer["Копировать"]</button>
+                <button disabled="@IsDisabledView" class="btn w-50 btn-warning me-2" @onclick="@View"><i class="fa-solid fa-credit-card pe-2"></i>@localizer["Просмотр"]</button>
+                <button disabled="@IsDisabledEdit" class="btn w-50 btn-secondary me-2" @onclick="@Edit"><i class="fa-solid fa-pen pe-2"></i>@localizer["Изменить"]</button>
+                @if (VisibleDel == "visible")
+                {
+                    <button disabled="@IsDisabledDelete" class="btn w-50 btn-danger me-2 @VisibleDel" @onclick="@Delete"><i class="fa-solid fa-trash pe-2"></i>@localizer["Удалить"]</button>
+                }
+                else
+                {
+                    <button disabled="@IsDisabledRecovery" class="btn w-50 btn-info me-2 @VisibleRec" @onclick="@Recovery"><i class="fa-solid fa-reply pe-2"></i>@localizer["Восстановить"]</button>
+                }
+            </div>
+            <div class="col text-end">
+                <button class="btn btn-warning" @onclick="@(()=>{ExcelModel model = new(); model.GenerateExcel(JS, Table, Layout.Title);})"><i class="fa-solid fa-file-download pe-2"></i>@localizer["Выгрузка"]</button>
+                @if (Table != null && Table.Count != 0)
+                {
+                    if (Table[0].Deleted == "F")
+                    {
+                        <button class="btn btn-dark ms-2 text-nowrap" @onclick="@(()=>{IsDeleted = !IsDeleted; RefreshTable();})"><i class="oi oi-trash pe-2"></i>@localizer["Удалённые"]</button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-dark ms-2" @onclick="@(()=>{IsDeleted = !IsDeleted; RefreshTable();})"><i class="oi oi-eye pe-2"></i>@localizer["Активные"]</button>
+                    }
+                }
+                else
+                {
+                    <button class="btn btn-dark ms-2" @onclick="@(()=>{IsDeleted = !IsDeleted; RefreshTable();})"><i class="oi oi-eye pe-2"></i>@localizer["Активные"]</button>
+                }
+            </div>
+        </div>
+    </div>
+    <br />
+
+    <!--Order Table-->
+    <div @ref="@Reference" class="table-solid" style="margin-top: -25px;">
+        <table class="table table-sm table-striped table-hover align-middle caption-top">
+            <thead class="thead-primary position-sticky" style="z-index: 2;top:164px;">
+                <FilterOrderTable Model="oModel" OnChange="@((List<OrderModel> filter) => {Table = filter; string TF = IsDeleted ? "T" : "F"; Table = Table.Where(x => x.Deleted == TF).ToList(); })"></FilterOrderTable>
+                <tr>
+                    <th class="ps-2 sort" @onclick="@(()=>SortTable("Name"))">@localizer["Наименование заказа"] <i class="fa-solid fa-sort"></i></th>
+                    <th class="ps-2 sort" @onclick="@(()=>SortTable("Codegisal"))">@localizer["Код Gisal"] <i class="fa-solid fa-sort"></i></th>
+                    <th class="ps-2 sort" @onclick="@(()=>SortTable("Codemachine"))">@localizer["Код машины"] <i class="fa-solid fa-sort"></i></th>
+                    <th class="ps-2 sort" @onclick="@(()=>SortTable("Dateorder"))">@localizer["Дата заказа"] <i class="fa-solid fa-sort"></i></th>
+                    <th class="ps-2 sort" @onclick="@(()=>SortTable("Datedelivery"))">@localizer["Дата поставки"] <i class="fa-solid fa-sort"></i></th>
+                    <th colspan="2" class="ps-3 sort" @onclick="@(()=>SortTable("Status"))">@localizer["Статус"] <i class="fa-solid fa-sort"></i></th>
+                    <th class="ps-2 sort" @onclick="@(()=>SortTable("Urgency"))">@localizer["Срочность"] <i class="fa-solid fa-sort"></i></th>
+                    <th class="ps-2 sort" @onclick="@(()=>SortTable("Ordernumber"))">@localizer["Заказ№"] <i class="fa-solid fa-sort"></i></th>
+                    <th class="ps-2"><i class="fa-solid fa-comment-sms h5"></i></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Table == null)
+                {
+                    <ToastNotification Data="Load" />
+                }
+                else if (Table.Count == 0)
+                {
+                    <ToastNotification Data="NoData" />
+                }
+                else
+                {
+                    foreach (OrderModel item in Table)
+                    {
+                        string bg = (item.Id == SelectedId) ? "selected-row" : (item.Overdue == "T") ? "expired-row" : string.Empty;/// Цвет выбранных строк и просрочки
+                        <tr class="hover-row @bg" @onclick="@(()=>RowClicked(item.Id))" @key="item">
+                            <td hidden>@item.Id</td>
+                            <td class="ps-2" style="max-width:330px;"><span class="col-md-auto d-block text-truncate">@item.Name</span></td>
+                            <td class="ps-2">@item.Codegisal</td>
+                            <td class="ps-2">@item.Codemachine</td>
+                            <td class="ps-2">@item.Dateorder.ToShortDateString()</td>
+                            <td class="ps-2">@item.Datedelivery.ToShortDateString()</td>
+                            <td colspan="2" style="max-width:100px;">
+                                <span class="col-md-auto d-block text-truncate">
+                                    @if (item.Status == 1)
+                                    {
+                                        <i class="fa-solid fa-cart-plus h5 pe-2" style="color:gray;"></i>
+                                    }
+                                    else if (item.Status == 2)
+                                    {
+                                        <i class="fa-solid fa-cart-flatbed h5 pe-2" style="color:cadetblue;"></i>
+                                    }
+                                    else if (item.Status == 3)
+                                    {
+                                        <i class="fa-solid fa-check-to-slot h5 pe-2" style="color:cadetblue;"></i>
+                                    }
+                                    else if (item.Status == 4)
+                                    {
+                                        <i class="fa-solid fa-warehouse h5 pe-2" style="color:cadetblue;"></i>
+                                    }
+                                    else if (item.Status == 5)
+                                    {
+                                        <i class="fa-solid fa-truck-ramp-box h5 pe-2" style="color:green;"></i>
+                                    }
+                                    else if (item.Status == 6)
+                                    {
+                                        <i class="fa-solid fa-circle-check h5 pe-2" style="color:green;"></i>
+                                    }
+                                    else if (item.Status == 7 && item.Deleted == "F")
+                                    {
+                                        <i class="fa-solid fa-triangle-exclamation h5 pe-2" style="color:black;"></i>
+                                    }
+                                    else if (item.Status == 8)
+                                    {
+                                        <i class="fa-solid fa-ban h5 pe-2" style="color:darkorange;"></i>
+                                    }
+                                    else if (item.Status == 9)
+                                    {
+                                        <i class="fa-solid fa-ban h5 pe-2" style="color:red;"></i>
+                                    }
+                                    else if (item.Status == 10)
+                                    {
+                                        <i class="fa-solid fa-circle-check h5 pe-2" style="color:darkorange;"></i>
+                                    }
+                                    @localizer[item.Statusname]
+                                </span>
+                            </td>
+                            <td class="ps-2" style="min-width:120px;">
+                                @if (item.Urgency == 1) { item.UrgencyName = @localizer["Обычный"]; }
+                                else { item.UrgencyName = @localizer["Срочный"]; }
+                                @item.UrgencyName
+                            </td>
+                            <td class="ps-2">@item.Ordernumber</td>
+                            <td class="ps-2" style="min-width:50px;">
+                                @item.Countsms
+                                @if (item.Nam == Layout.Login && item.Ischeck == "F")/// Свои СМС
+                                {
+                                    <i class="fa-solid fa-exclamation h5 ps-1" style="color:dodgerblue;"></i>
+                                }
+                                @if (item.Nam != Layout.Login && item.Ischeck == "F")/// Чужие СМС
+                                {
+                                    <i class="fa-solid fa-exclamation h5 ps-1" style="color:red;"></i>
+                                }
+                            </td>
+                            <td>
+                                @if (item.Deleted == "T")
+                                {
+                                    if (Layout.Role == "DEVEL")
+                                    {
+                                        <button class="btn btn-danger me-2" @onclick="@Delete">@localizer["Удалить"]</button>
+                                    }
+                                    else
+                                    {
+                                        <i class="fa-solid fa-trash h5 float-end" style="color:brown;"></i>
+                                    }
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</EditForm>
+
+@if (IsModalOpen)
+{
+    <ModalOrder Title="@Title" Row="@Row" OnClose="@CloseModal"></ModalOrder>
+}
+<ModalDialog IsOpen="@IsModalDialogOpen" Text="@RenderText" Title="@Title" OnClose="@CloseModal"></ModalDialog>
+<ToastNotification IsOpen="@Toast.IsOpen" Text="@Toast.RenderText" Level="@Toast.Level"></ToastNotification>
+@code {
+    private bool IsModalOpen { get; set; }
+    private bool IsModalDialogOpen { get; set; }
+    private bool IsDisabledAdd { get; set; }
+    private bool IsDisabledCopy { get; set; } = true;
+    private bool IsDisabledEdit { get; set; } = true;
+    private bool IsDisabledView { get; set; } = true;
+    private bool IsDisabledDelete { get; set; } = true;
+    private bool IsDisabledRecovery { get; set; } = true;
+    private string VisibleDel { get; set; } = "visible";
+    private string VisibleRec { get; set; } = "invisible";
+    private bool IsDeleted { get; set; }
+    private Int64 SelectedId { get; set; }
+    private string Title { get; set; }
+    private bool EditAllowed { get; set; }
+    private RenderFragment RenderText { get; set; }
+    private string SearchValue { get; set; }
+    private Dictionary<Int64, string> DivisionList { get; set; }
+    private List<OrderModel> Table { get; set; }
+    private OrderModel Row { get; set; }
+    OrderModel oModel = new OrderModel();
+    public ElementReference Reference { get; set; }
+    private bool IsSortedAscending;/// В каком направлении таблица в данный момент таблица отсортирована
+    private string CurrentSortColumn;/// По какому столбцу сортировать таблицу
+    private Int64 CountLogs { get; set; }
+    private System.Threading.Timer? timer;
+    [CascadingParameter] public MainLayout Layout { get; set; }
+    [CascadingParameter] private Task<AuthenticationState> AuthStat { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        Layout.Title = localizer["Заказы"];
+        Layout.Page = this;
+        IsDisabledAdd = (Layout.Role == "PROVI");
+        var auth = await AuthStat;
+        oModel.LoginID = Convert.ToInt32(auth.User.FindFirstValue(ClaimTypes.NameIdentifier));
+        oModel.GetDivisionID();
+        DivisionList = oModel.GetListDevisions();
+
+        await Task.Run(RefreshTable);
+
+        // Авто-обновление (проверка изменений)
+        LogsModel.CountLogs = CountLogs = oModel.GetCountLogs();/// Получить начальное количество логов
+        timer = new System.Threading.Timer(async (object? stateInfo) =>
+        {
+            if (CountLogs < LogsModel.CountLogs)
+            {
+                await Task.Run(() => CountLogs = LogsModel.CountLogs);
+                await Task.Run(RefreshTable);
+                await InvokeAsync(StateHasChanged);
+            }
+        }, null, 1000, 1000);/// Запуск через каждые несколько сек
+    }
+    private void FilterDivision(ChangeEventArgs e) { oModel.Divisionid = Convert.ToDecimal(e.Value); RefreshTable(); }
+    private void RefreshTable() { Table = oModel.GetDataOrders(); string TF = IsDeleted ? "T" : "F"; Table = Table.Where(x => x.Deleted == TF).ToList(); }
+    private void SortTable(string column)
+    {
+        if (column != CurrentSortColumn)
+        {
+            Table = Table.OrderBy(x => x.GetType().GetProperty(column).GetValue(x, null)).ToList();
+            CurrentSortColumn = column;
+            IsSortedAscending = true;
+        }
+        else/// Сортировка в другом направлении
+        {
+            Table = IsSortedAscending ? Table.OrderByDescending(x => x.GetType().GetProperty(column).GetValue(x, null)).ToList() : Table.OrderBy(x => x.GetType().GetProperty(column).GetValue(x, null)).ToList();
+            IsSortedAscending = !IsSortedAscending;
+        }
+    }
+    private void RowClicked(Int64 id)
+    {
+        oModel.Id = SelectedId = id;
+        IsDisabledEdit = IsDisabledView = IsDisabledDelete = IsDisabledRecovery = (id == SelectedId) ? false : true;/// Если строка в фокусе
+        Row = Table.Where(x => x.Id == SelectedId).LastOrDefault();
+        /// Доступ к кнопкам по ролям пользователя, по метке удаления и статусу записи
+        if (Layout.Role == "DEVEL")
+        {
+            if (Row.Deleted == "F")
+            { IsDisabledAdd = IsDisabledCopy = IsDisabledEdit = IsDisabledView = IsDisabledDelete = false; VisibleDel = "visible"; VisibleRec = "invisible"; }
+            else { VisibleDel = "invisible"; VisibleRec = "visible"; }
+        }
+        else if (Layout.Role == "PROVI")
+        {
+            if (Row.Deleted == "F")
+            {
+                IsDisabledAdd = IsDisabledCopy = IsDisabledDelete = IsDisabledRecovery = true; IsDisabledEdit = IsDisabledView = false; VisibleDel = "visible"; VisibleRec = "invisible";
+                IsDisabledEdit = Row.Status == 6 || Row.Status == 9 || Row.Status == 10 ? true : false;
+            }
+            else
+            { IsDisabledAdd = IsDisabledCopy = IsDisabledEdit = IsDisabledDelete = IsDisabledRecovery = true; VisibleDel = "invisible"; VisibleRec = "visible"; }
+        }
+        else if (Layout.Role == "VIEWE")
+        {
+            IsDisabledAdd = IsDisabledCopy = IsDisabledEdit = IsDisabledDelete = IsDisabledRecovery = true;
+            if (Row.Deleted == "F")
+            { IsDisabledView = false; VisibleDel = "visible"; VisibleRec = "invisible"; }
+            else
+            { VisibleDel = "invisible"; VisibleRec = "visible"; }
+        }
+        else
+        {
+            if (Row.Deleted == "F")
+            {
+                IsDisabledAdd = IsDisabledCopy = IsDisabledEdit = IsDisabledView = IsDisabledDelete = IsDisabledRecovery = false; VisibleDel = "visible"; VisibleRec = "invisible";
+                IsDisabledEdit = Row.Status == 3 || Row.Status == 4 || Row.Status == 6 || Row.Status == 8 || Row.Status == 9 || Row.Status == 10 ? true : false;
+                if (Row.Status == 8 || Row.Status == 9) IsDisabledCopy = true;
+            }
+            else
+            { IsDisabledEdit = true; VisibleDel = "invisible"; VisibleRec = "visible"; }
+            if (Row.Status != 1) IsDisabledDelete = true;
+        }
+    }
+    public void Add()
+    {
+        if (!IsModalOpen && !IsDisabledAdd)
+            SetModalSettings(ModeButton.Add, localizer["Добавление"]);
+    }
+    public void Copy()
+    {
+        if (!IsModalOpen && SelectedId > 0 && !IsDisabledCopy)
+            SetModalSettings(ModeButton.Copy, localizer["Копия заказа"]);
+    }
+    public void View()
+    {
+        if (!IsModalOpen && SelectedId > 0 && !IsDisabledView)
+            SetModalSettings(ModeButton.View, localizer["Карточка заказа"]);
+    }
+    public void Edit()
+    {
+        if (!IsModalOpen && SelectedId > 0 && !IsDisabledEdit && Row.Deleted == "F")
+            SetModalSettings(ModeButton.Edit, localizer["Редактирование"]);
+    }
+    public void Delete()
+    {
+        if (Row == null) return;
+        if (!IsModalOpen && SelectedId > 0 && !IsDisabledDelete)
+        {
+            if (VisibleDel == "visible")
+                SetModalDialogSettings(ModeButton.MarkDelRec, localizer["Внимание"]!, @<span>@localizer["Вы действительно хотие удалить"]?<br />@Row.Name</span>, "T");
+            else if (Layout.Role == "DEVEL")
+                SetModalDialogSettings(ModeButton.Delete, localizer["Внимание"]!, @<span>@localizer["Вы действительно хотие удалить из базы"]?<br />@Row.Name</span>);
+        }
+    }
+    public void Recovery()
+    {
+        if (Row == null) return;
+        if (!IsModalOpen && SelectedId > 0 && !IsDisabledRecovery && VisibleRec == "visible")
+            SetModalDialogSettings(ModeButton.MarkDelRec, localizer["Внимание"]!, @<span>@localizer["Вы действительно хотие восстановить"]?<br />@Row.Name</span>, "F");
+    }
+    private void SetModalSettings(ModeButton mode, string title)
+    {
+        IsModalOpen = true;
+        Mode.Button = mode;
+        Title = title;
+    }
+    private void SetModalDialogSettings(ModeButton mode, string title, RenderFragment renderText, string deleted = null)
+    {
+        Mode.Button = mode;
+        IsModalDialogOpen = true;
+        Title = title;
+        RenderText = renderText;
+        oModel.Login = Layout.Login;
+        oModel.RoleName = Layout.RoleName;
+        oModel.Ordernumber = Row.Ordernumber;
+        oModel.Name = Row.Name;
+        oModel.Deleted = deleted;
+    }
+    private void ClearFilter() { oModel.Name = null; oModel.Ordernumber = 0; }
+    private async Task CloseModal(bool accepted)
+    {
+        if (accepted)
+        {
+            if (Mode.Button == ModeButton.MarkDelRec || Mode.Button == ModeButton.Delete)
+            {
+                oModel.DeleteOrRecovery();
+            }
+            ClearFilter();
+            RefreshTable();
+            Row = Table.Where(x => x.Id == SelectedId).LastOrDefault();
+            IsModalDialogOpen = false;
+            IsModalOpen = false;
+            await Toast.Notification(@<span>@localizer[BaseModel.MyMessage]!</span>, ToastLevel.Success);
+        }
+        else
+        {
+            IsModalDialogOpen = false;
+            IsModalOpen = false;
+        }
+        ClearFilter();
+        await Task.Run(() => Reference.FocusAsync());
+        LogsModel.CountLogs = oModel.GetCountLogs();
+        //StateHasChanged();
+    }
+}

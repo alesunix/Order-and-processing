@@ -1,0 +1,63 @@
+﻿@page "/admin"
+@attribute [Authorize]
+@inject IStringLocalizer<Resource> localizer
+
+<div class="row">
+    <div class="col col-md-10">
+        <AuthorizeView Roles="ADMIN">
+            <a href="./users">
+                <div class="link-primary cardlink cards">
+                    <img src="./images/user.png" />
+                    <div>@localizer["Пользователи"]</div>
+                </div>
+            </a>
+        </AuthorizeView>
+        <AuthorizeView Roles="DEVEL">
+            <a href="./users">
+                <div class="link-primary cardlink cards">
+                    <img src="./images/user.png" />
+                    <hr />
+                    <div>@localizer["Пользователи"]</div>
+                </div>
+            </a>
+        </AuthorizeView>
+        <AuthorizeView Roles="DEVEL">
+            <a href="./division">
+                <div class="link-primary cardlink cards">
+                    <img src="./images/division.png" />
+                    <hr />
+                    <div>@localizer["Подразделения"]</div>
+                </div>
+            </a>
+        </AuthorizeView>
+        <AuthorizeView>
+            <span role="button">
+                <div class="link-primary cardlink cards" @onclick="@(()=> Edit())">
+                    <img src="./images/key.png" />
+                    <hr />
+                    <div>@localizer["Изменить пароль"]</div>
+                </div>
+            </span>
+        </AuthorizeView>
+
+    </div>
+</div>
+@if (OpenModal)
+{
+    <ModalPasswordChange Title="@localizer["Смена пароля"]" Id="@Layout.Id" OnClose="@CloseModal"></ModalPasswordChange>
+}
+@code {
+    private bool OpenModal { get; set; }
+    [CascadingParameter] public MainLayout Layout { get; set; }
+    protected override void OnInitialized()
+    {
+        Layout.Title = localizer["Администрирование"];
+        base.OnInitialized();
+    }
+    void Edit() => OpenModal = true;
+    void CloseModal()
+    {
+        OpenModal = false;
+        StateHasChanged();
+    }
+}

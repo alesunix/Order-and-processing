@@ -1,0 +1,113 @@
+﻿@inject IStringLocalizer<Resource> localizer
+
+<tr style="border-style: hidden;">
+    <td>
+        <div class="input-group" style="max-width:330px;">
+            <input type="text" @bind-value="Model.Name" class="form-control" @oninput="@FilterName"></input>
+        </div>
+    </td>
+    <td>
+        <div class="input-group" style="max-width:105px;">
+            <input type="text" @bind-value="Model.Codegisal" class="form-control" @oninput="@FilterGisal"></input>
+        </div>
+    </td>
+    <td>
+        <div class="input-group" style="max-width:130px;">
+            <input type="text" @bind-value="Model.Codemachine" class="form-control" @oninput="@FilterMashine"></input>
+        </div>
+    </td>
+    <td colspan="2">
+        <div class="input-group" style="max-width:600px;">
+            <InputSelect class="form-control" @bind-Value="@Model.FieldDate" style="max-width:10px;">
+                <option value=""></option>
+                @foreach (var item in DateList)
+                {
+                    <option value="@item.Key">@item.Value</option>
+                }
+            </InputSelect>
+            <span class="input-group-text">С</span>
+            <InputDate max="2100-01-01" class="form-control" @bind-Value="Model.StartDate" />
+            <span class="input-group-text">По</span>
+            <InputDate max="2100-01-01" class="form-control" @bind-Value="Model.EndDate" />
+            <button @onclick="@Filter" class="input-group-text fa-solid fa-filter"></button>
+        </div>
+    </td>
+    <td></td>
+    <td>
+        <div class="input-group">
+            <select class="form-control" @onchange="@FilterStatus" value="@Model.Status">
+                <option value=0></option>
+                @foreach (var item in StatusList)
+                {
+                    <option value="@item.Key">@localizer[item.Value]</option>
+                }
+            </select>
+        </div>
+    </td>
+    <td>
+        <div class="input-group">
+            <select class="form-control" @onchange="@FilterUrgency" value="@Model.Urgency">
+                <option value=0></option>
+                @foreach (var item in UrgencyList)
+                {
+                    <option value="@item.Key">@localizer[item.Value]</option>
+                }
+            </select>
+        </div>
+    </td>
+    <td>
+        <div class="input-group" style="max-width:100px;">
+            <input type="number" @bind-value="Model.Ordernumber" class="form-control" @oninput="@FilterOrdernumber"></input>
+        </div>
+    </td>   
+    <td>
+        <div>
+            <button @onclick="(()=>ClearFilters(new ChangeEventArgs {Value=string.Empty}))" class="form-control pt-3 fa-solid fa-filter-circle-xmark"></button>
+        </div>
+    </td>
+    <td></td>
+</tr>
+
+@code {
+    [Parameter] public OrderModel Model { get; set; }
+    [Parameter] public EventCallback<List<OrderModel>> OnChange { get; set; }
+    private Dictionary<decimal, string> StatusList { get; set; }
+    private Dictionary<string, string> DateList { get; set; }
+    private Dictionary<decimal, string> UrgencyList { get; set; }
+    protected override void OnInitialized()
+    {
+        GetDateList();
+        StatusList = Model.StatusList();
+        UrgencyList = Model.UrgencyList();
+        Model.FieldDate = "dateorder"; Model.StartDate = DateTime.Now.AddMonths(-6); Model.EndDate = DateTime.Now;/// Загрузка из базы за последние 6 мес
+    }
+    private Task Filter() => OnChange.InvokeAsync(Model.GetDataOrders());
+    void FilterName(ChangeEventArgs e) { Model.Name = (string)e.Value; Filter(); }
+    void FilterGisal(ChangeEventArgs e) { Model.Codegisal = (string)e.Value; Filter(); }
+    void FilterMashine(ChangeEventArgs e) { Model.Codemachine = (string)e.Value; Filter(); }
+    void FilterStatus(ChangeEventArgs e) { Model.Status = Convert.ToDecimal(e.Value); Model.Overdue = Model.Status == 7 ? "T" : "F"; Filter(); }
+    void FilterUrgency(ChangeEventArgs e) { Model.Urgency = Convert.ToDecimal(e.Value); Filter(); }
+    void FilterOrdernumber(ChangeEventArgs e) { Model.Ordernumber = Convert.ToDecimal(e.Value = e.Value.ToString() == "" ? 0 : e.Value); Filter(); }
+    private void GetDateList()
+    {
+        DateList = new();
+        DateList.Add("a.Dateorder", localizer["Дата заказа"]);
+        DateList.Add("a.Datedelivery", localizer["Дата поставки"]);
+    }
+    void ClearFilters(ChangeEventArgs e)
+    {
+        if (e.Value.ToString() == string.Empty)
+        {
+            Model.Name = string.Empty;
+            Model.Codegisal = string.Empty;
+            Model.Codemachine = string.Empty;
+            Model.FieldDate = string.Empty;
+            Model.StartDate = DateTime.Now.AddMonths(-6);
+            Model.EndDate = DateTime.Now;
+            Model.Status = 0;
+            Model.Urgency = 0;
+            Model.Ordernumber = 0;
+        }
+        Filter();
+    }
+}

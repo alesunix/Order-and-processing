@@ -1,0 +1,19 @@
+﻿<input type="text" inputmode="numeric" disabled="@Disabled" class="form-control" value="@Value.ToString("N0", new CultureInfo("Ru-ru"))" @oninput="@ChangeValue" />
+
+@code {
+    [Parameter] public decimal Value { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public EventCallback<decimal> OnChange { get; set; }
+
+    private Task ChangeValue(ChangeEventArgs e)
+    {
+        string input = e.Value.ToString();
+        input = input == "" ? "0" : input;
+        //decimal value = Convert.ToDecimal(input);
+        decimal value;
+        decimal.TryParse(string.Join("", input.Where(x => char.IsDigit(x))), out value);/// Вытащить только цифры
+
+        Value = decimal.Parse(value.ToString("N0", new CultureInfo("Ru-ru")));
+        return OnChange.InvokeAsync(Value);
+    }
+}

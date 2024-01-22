@@ -1,0 +1,26 @@
+﻿.chat-box {
+    /* Стили для общего контейнера чата */
+    height: 120px;
+    overflow-y:auto;
+    font-size: 12px;
+    background-color: aliceblue;
+}
+.incoming {
+    background-color: #b5dcff;
+}
+.outgoing {
+    background-color: #dee7ee;
+}
+.chat-message {
+    /* Стили для каждого сообщения в чате */
+    margin-bottom: 1px;
+    word-wrap: break-word;
+}
+    /*.chat-message.even {*/
+        /* Стили для четных строк */
+        /*background-color: rgba(0, 0, 0, 0.05);
+    }
+    .chat-message.odd {*/
+        /* Стили для нечетных строк */
+        /*background-color: aliceblue;
+    }*/

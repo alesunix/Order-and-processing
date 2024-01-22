@@ -1,0 +1,605 @@
+﻿@inject IJSRuntime JS
+@inject IStringLocalizer<Resource> localizer
+
+<EditForm Model="oModel" OnValidSubmit="@ModalOk">
+    <DataAnnotationsValidator />
+    <div class="modal fade show" role="dialog" aria-modal="true" tabindex="-1" style="display:block;">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="background-color: #fffcf4;">
+                <!--Modal Header-->
+                <div class="modal-header text-center">
+                    <h4 class="modal-title w-100 font-weight-bold">@Title</h4>
+                    <button type="button" class="btn-close" aria-label="Close" @onclick="@ModalCancel"></button>
+                </div>
+                <!--Modal Body-->
+                <div class="modal-body mx-3">
+                    <div class="row">
+                        <!--Левая часть-->
+                        <div class="col col-md-6">
+                            <div class="img-thumbnail img-fluid px-2" style="background-color: #fffcf4;">
+                                <div class="row md-2">
+                                    <div @ref="@firstFocusElement" class="col mb-2">
+                                        <label>@localizer["Наименование заказа"]</label>
+                                        <InputText disabled="@IsDisabledViewing" class="form-control" @bind-Value="@oModel.Name" />
+                                        <ValidationMessage For="(() => oModel.Name)" />
+                                    </div>
+                                </div>
+
+                                <div class="row mb-2">
+                                    <div class="col col-md-7">
+                                        <label>@localizer["Код поставщика Gisal"]</label><!--Доступ: Поставщик-->
+                                        <InputText disabled="@IsDisabledProvi" class="form-control" @bind-Value="@oModel.Codegisal" />
+                                    </div>
+                                    <div class="col col-md-5">
+                                        <label>@localizer["Код машины"]</label>
+                                        <InputText disabled="@IsDisabledViewing" class="form-control" @bind-Value="@oModel.Codemachine" />
+                                        <ValidationMessage For="(() => oModel.Codemachine)" />
+                                    </div>
+                                </div>
+
+                                <div class="row mb-2">
+                                    <div class="col col-md-7">
+                                        <label>@localizer["Код линии"]</label>
+                                        <InputText disabled="@IsDisabledViewing" class="form-control" @bind-Value="@oModel.Codeline" />
+                                        <ValidationMessage For="(() => oModel.Codeline)" />
+                                    </div>
+                                    <div class="col col-md-5">
+                                        <label>@localizer["Номер модуля"]</label>
+                                        <InputText disabled="@IsDisabledViewing" class="form-control" @bind-Value="@oModel.Module" />
+                                        <ValidationMessage For="(() => oModel.Module)" />
+                                    </div>
+                                </div>
+
+                                <div class="row mb-2">
+                                    <div class="col col-md-7">
+                                        <label>@localizer["Срочность"]</label>
+                                        <InputSelect disabled="@IsDisabledViewing" class="form-control" @bind-Value="@oModel.Urgency">
+                                            @foreach (var item in UrgencyList)
+                                            {
+                                                <option value="@item.Key">@localizer[item.Value]</option>
+                                            }
+                                        </InputSelect>
+                                        <ValidationMessage For="(() => oModel.Urgency)" />
+                                    </div>
+                                    <div class="col col-md-5">
+                                        <label>@localizer["Количество"]</label>
+                                        <InputNumber disabled="@IsDisabledViewing" class="form-control" @bind-Value="@oModel.Amount" />
+                                        <ValidationMessage For="(() => oModel.Amount)" />
+                                    </div>
+                                </div>
+
+                                @if (Mode.Button == ModeButton.Edit || Mode.Button == ModeButton.View)
+                                {
+                                    <div class="col">
+                                        <label>@localizer["Статус"]</label><!--Доступ: Заказчик и Поставщик-->
+                                        <InputSelect disabled="@IsDisabledStatus" class="form-control" @bind-Value="@oModel.Status">
+                                            @if (!StatusList.ContainsKey(oModel.Status))/// При изменении статуса исключить двойники
+                                            {
+                                                <option value="@oModel.Status">@oModel.GetStatusName()</option>
+                                                /// Отобразить статус который отсутствует в списке из за доступа
+                                            }
+                                            @foreach (var item in StatusList)
+                                            {
+                                                if (Layout.Role == "PROVI" && oModel.Codegisal != string.Empty)/// Заполнение кода GISAL и даты поставки заказа должно быть обязательным для установки статуса
+                                                {
+                                                    <option value="@item.Key">@localizer[item.Value]</option>
+                                                }
+                                                else if (Layout.Role == "PROVI" && oModel.Codegisal == string.Empty && oModel.Status == 1)
+                                                {
+                                                    oModel.Status = 1;
+                                                }
+                                                else if (Layout.Role == "PROVI" && oModel.Codegisal == string.Empty && oModel.Status == 2)
+                                                {
+                                                    oModel.Status = 2;
+                                                }
+                                                else if (Layout.Role != "PROVI")
+                                                {
+                                                    <option value="@item.Key">@localizer[item.Value]</option>
+                                                }
+                                            }
+                                        </InputSelect>
+                                        <ValidationMessage For="(() => oModel.Status)" />
+                                    </div>
+                                    <div class="col mb-5" style="margin-right: 10px;margin-top: -35px;">
+                                        @if (oModel.Status == 1)
+                                        {
+                                            <i class="fa-solid fa-cart-plus h2" style="float: right;color:gray;"></i>
+                                        }
+                                        else if (oModel.Status == 2)
+                                        {
+                                            <i class="fa-solid fa-cart-flatbed h2" style="float: right;color:cadetblue;"></i>
+                                        }
+                                        else if (oModel.Status == 3)
+                                        {
+                                            <i class="fa-solid fa-check-to-slot h2" style="float: right;color:cadetblue;"></i>
+                                        }
+                                        else if (oModel.Status == 4)
+                                        {
+                                            <i class="fa-solid fa-warehouse h2" style="float: right;color:cadetblue;"></i>
+                                        }
+                                        else if (oModel.Status == 5)
+                                        {
+                                            <i class="fa-solid fa-truck-ramp-box h2" style="float: right;color:green;"></i>
+                                        }
+                                        else if (oModel.Status == 6)
+                                        {
+                                            <i class="fa-solid fa-circle-check h2" style="float: right;color:green;"></i>
+                                        }
+                                        else if (oModel.Status == 7)
+                                        {
+                                            <i class="fa-solid fa-triangle-exclamation h2" style="float: right;color:black;"></i>
+                                        }
+                                        else if (oModel.Status == 8)
+                                        {
+                                            <i class="fa-solid fa-ban h2" style="float: right;color:darkorange;"></i>
+                                        }
+                                        else if (oModel.Status == 9)
+                                        {
+                                            <i class="fa-solid fa-ban h2" style="float: right;color:red;"></i>
+                                        }
+                                        else if (oModel.Status == 10)
+                                        {
+                                            <i class="fa-solid fa-circle-check h2" style="float: right;color:darkorange;"></i>
+                                        }
+                                    </div>
+                                    @if (Layout.Role == "PROVI" && oModel.Status == 8)
+                                    {
+                                        <div class="col mb-3">
+                                            <input type="checkbox" class="myInput" checked="@IsCancelOrder" @oninput="@(()=>IsCancelOrder = !IsCancelOrder)" />
+                                            <span class="ms-5">@localizer["Подтверждаю отмену заказа"].</span>
+                                        </div>
+                                    }
+                                }
+                                <div class="col">
+                                    <label>@localizer["Примечание"]</label>
+                                    <InputTextArea disabled="@IsDisabledViewing" maxlength="200" rows="4" class="form-control" @bind-Value="@oModel.Rem" />
+                                    <ValidationMessage For="(() => oModel.Rem)" />
+                                </div>
+                            </div>
+                        </div>
+                        <!--Правая часть-->
+                        <div class="col col-md-6">
+                            <section class="img-thumbnail img-fluid px-2" style="background-color: #fffcf4;">
+                                <div class="row">
+                                    <div class="col col-md-6">
+                                        <label>@localizer["Дата заказа"]</label>
+                                        <InputDate max="2100-01-01" disabled class="form-control" @bind-Value="@oModel.Dateorder" />
+                                    </div>
+                                    <div class="col col-md-6">
+                                        <label>@localizer["Дата поставки"]</label><!--Доступ: Поставщик-->
+                                        <InputDate max="2100-01-01" disabled="@IsDisabledProvi" class="form-control" @bind-Value="@oModel.Datedelivery" />
+                                    </div>
+                                </div>
+                                @{
+                                    long RowId = Row == null ? 0 : Row.Id;
+                                }
+                                @if (oModel.CounterOperations(RowId) == 2)
+                                {
+                                    if (Mode.Button != ModeButton.View && Layout.Role != "PROVI" && Layout.Role != "VIEWE")
+                                    {
+                                        <input type="checkbox" class="form-check-input" checked="@false" @oninput="@(()=>IsResetCounter = !IsResetCounter)" />
+                                        <span class="small ms-1">@localizer["Сбросить счетчик продления даты поставки"].</span>
+                                    }
+                                    else
+                                    {
+                                        <label class="col-form-label-sm" style="color:red;">@localizer["Превышено количество попыток продления даты поставки"]</label>
+                                    }
+
+                                }
+                            </section>
+                            <div class="col mb-2 img-thumbnail img-fluid px-2" style="background-color: #fffcf4;">
+                                <label>@localizer["Сопроводительные документы"]: </label>
+                                @if (Mode.Button != ModeButton.View && Layout.Role != "PROVI")
+                                {
+                                    <!--Загрузка файлов-->
+                                    <div class="row">
+                                        <div class="col">
+                                            @for (int i = 0; i < numberOfInputFile; i++)/// При новом выборе будет создавать новый InputFile (для загрузки при нескольких выборах файлов)
+                                            {
+                                                <InputFile @key="i" OnChange="AddInputFile" multiple style="@HideInputFile(i)"></InputFile>
+                                            }
+                                            <!--Очистить загруженные файлы-->
+                                            <button type="button" class="btn btn-secondary btn-sm float-end" title="@localizer["Очистить загруженные файлы"]" @onclick="@(()=>{selectedFiles = null; ListFiles.Clear();})"><i class="fa-solid fa-broom "></i></button>
+                                        </div>
+                                    </div>
+                                    <div class="cardOffense col text-wrap g-2 img-thumbnail img-fluid" style="border: 1px solid #ced4da;">
+                                        <!--Отрисовка во время выбора-->
+                                        @foreach (IBrowserFile item in ListFiles)
+                                        {
+                                            <span class="btn-sm py-0 px-0 text-start text-success"><i class="fa-solid fa-file-circle-plus pe-2"></i>@item.Name</span>
+                                            <div @onclick="@(()=>ListFiles.Remove(item))" type="button" class="btn btn-close btn-sm float-end" data-toggle="tooltip" data-placement="top" title="@localizer["Удалить"]" />
+                                            <br />
+                                        }
+                                    </div>
+                                }
+                                <div class="row mx-0 row-cols-1 row-cols-sm-2 row-cols-md-4">
+                                    @if ((Mode.Button == ModeButton.Edit || Mode.Button == ModeButton.View || Mode.Button == ModeButton.Copy) && Files != null)
+                                    {
+                                        <!--Отображение файлов на странице при редактировании и просмотре-->
+                                        string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/icons/");
+                                        string[] files = Directory.GetFiles(path, "*.png");/// Собрать файлы icons
+                                        List<string> listIconNames = new();
+                                        foreach (var item in files)
+                                        {
+                                            string file = item.Split(path)[1];
+                                            listIconNames.Add(file.Split('.')[0]);
+                                        }
+                                        foreach (var item in Files)
+                                        {
+                                            decimal id = item.Id;
+                                            string fileName = item.Nam;
+                                            byte[] bytes = (byte[])item.Files;
+
+                                            string file = $"data:application/vnd;base64,{Convert.ToBase64String(bytes)}";
+                                            string fileExtension = fileName.Substring(fileName.LastIndexOf('.') + 1).ToLower();/// расширение файла
+                                            <div class="cards col mb-2 m-1 text-break g-2 img-thumbnail img-fluid">
+                                                @if (Mode.Button != ModeButton.View)
+                                                {
+                                                    <div @onclick="@(()=>DeleteFile(id, fileName))" type="button" class="btn btn-close btn-sm float-end" data-toggle="tooltip" data-placement="top" title="@localizer["Удалить"]" />
+                                                }
+                                                <!--Картинка-->
+                                                <button @onclick="@(()=>DownLoad(fileName, file))" type="button" class="btn btn-link btn-sm py-0 px-0" data-toggle="tooltip" data-placement="top" title="@localizer["Скачать"]">
+                                                    @if (listIconNames.Contains(fileExtension))/// Если в коллекции иконок имя файла совпадает с расширением файлов из базы
+                                                    {
+                                                        string src = $"./images/icons/{fileExtension}.png";
+                                                        <img src="@src" class="img-thumbnail img-fluid" />
+                                                    }
+                                                    else/// Если не найдено расширение в коллекции, то стандартная картинка
+                                                    {
+                                                        string src = $"./images/icons/file.png";
+                                                        <img src="@src" class="img-thumbnail img-fluid" />
+                                                    }
+                                                </button>
+                                                <!--Ссылка-->
+                                                <button @onclick="@(()=>DownLoad(fileName, file))" type="button" class="btn btn-link btn-sm py-0 px-0" data-toggle="tooltip" data-placement="top" title="@localizer["Скачать"]" style="font-size:smaller;">@fileName</button>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                                <div class="col">
+                                    @if (Files != null && Files.Count != 0)
+                                    {
+                                        <button type="button" class="btn btn-primary btn-sm" title="@localizer["Скачать все файлы"]" @onclick="@DownLoadFiles">
+                                            <i class="oi oi-cloud-download" style="padding-right:5px;" />@localizer["Скачать все"]
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                            @if (Mode.Button == ModeButton.Edit || Mode.Button == ModeButton.View)
+                            {
+                                <!--Чат-->
+                                <div class="col img-thumbnail img-fluid" style="background-color: wheat;">
+                                    <div @ref="@Reftextarea" class="chat-box">
+                                        @foreach (var item in oModel.Chat)
+                                        {
+                                            <div class="chat-message @(Layout.Login == item.Nam ? "incoming" : "outgoing")">
+                                                <span>@item.Nam @item.Dt.ToShortDateString() @item.Dt.ToShortTimeString(): @item.Sms</span>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="row mt-1">
+                                        <div class="col col-md-10" style="padding-right: 0px;">
+                                            <InputText placeholder=@localizer["Сообщение"] class="form-control" @bind-Value="@oModel.Sms" style="background-color: aliceblue;"></InputText>
+                                        </div>
+                                        <div class="col" style="padding-right: 9px;padding-left: 9px;">
+                                            <button type="button" class="btn btn-primary float-end" title="@localizer["Отправить SMS"]" @onclick="@(()=>
+                                                {
+                                                    oModel.InsertSMS();
+                                                    oModel.Sms = null;
+                                                    LogsModel.Chat = oModel.GetDataChat(oModel.Id);
+                                                    LogsModel.CountLogs = oModel.GetCountLogs();
+                                                })">
+                                                <i class="fa-solid fa-paper-plane"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <!--Modal Footer-->
+                <div class="modal-footer">
+                    @if (Mode.Button != ModeButton.View)
+                    {
+                        <div class="col-8">
+                            <input type="checkbox" class="myInput" checked="@IsRight" @oninput="@(()=>{IsRight = !IsRight; IsDisabledSave = !IsRight ? true : false;})" />
+                            <span class="ms-5">@localizer["Подтверждаю, данные введены верно"].</span>
+                        </div>
+                        <button type="submit" class="btn btn-success" style="width: 110px;" disabled="@IsDisabledSave">@localizer["Сохранить"]</button>
+                        <button @ref="@lastFocusElement" type="button" class="btn btn-secondary" style="width: 110px;" @onclick="@ModalCancel">@localizer["Отмена"]</button>
+                    }
+                    else if (Mode.Button == ModeButton.View)
+                    {
+                        <button type="button" class="btn btn-warning" style="width: 80px;" @onclick="@ModalCancel">OK</button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</EditForm>
+<ToastNotification IsOpen="@Toast.IsOpen" Text="@Toast.RenderText" Level="@Toast.Level"></ToastNotification>
+<ModalDialog IsOpen="@IsOpenModalDialog" Text="@RenderText" Title="@TitleModalDialog" Choice="Choice" OnClose="@CloseModalDialog"></ModalDialog>
+@code {
+    [Parameter] public EventCallback<bool> OnClose { get; set; }
+    [Parameter] public string Title { get; set; }
+    [Parameter] public OrderModel Row { get; set; }
+    private ElementReference Reftextarea;
+    private ElementReference firstFocusElement;
+    private ElementReference lastFocusElement;
+    private bool IsCancelOrder { get; set; }
+    private bool IsRight { get; set; }
+    private bool IsResetCounter { get; set; }
+    private bool IsDisabledSave { get; set; } = true;
+    private bool IsOpenModalDialog { get; set; }
+    private bool Choice { get; set; }
+    private bool IsDisabled { get; set; }
+    private bool IsDisabledViewing { get; set; }
+    private bool IsDisabledStatus { get; set; }
+    private bool IsDisabledProvi { get; set; }
+    private string TitleModalDialog { get; set; }
+    private string CurrentStatusName { get; set; }
+    private List<File> Files { get; set; }
+    private List<IBrowserFile> ListFiles { get; set; }
+    private RenderFragment RenderText { get; set; }
+    private Dictionary<decimal, string> UrgencyList { get; set; }
+    private Dictionary<decimal, string> StatusList { get; set; }
+    OrderModel oModel = new OrderModel();
+    IReadOnlyList<IBrowserFile> selectedFiles;
+    private int numberOfInputFile = 1;
+    private System.Threading.Timer? timer;
+    [CascadingParameter] public MainLayout Layout { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        oModel.Login = Layout.Login;
+        oModel.LoginID = Layout.Id;
+        oModel.RoleName = Layout.RoleName;
+        oModel.Role = Layout.Role;
+        StatusList = oModel.StatusList();
+        UrgencyList = oModel.UrgencyList();
+        ListFiles = new List<IBrowserFile>();
+        Access();
+
+        if (Mode.Button == ModeButton.Edit || Mode.Button == ModeButton.View)
+        {
+            oModel.Id = Row.Id;
+            oModel.Name = Row.Name;
+            oModel.Dateorder = Row.Dateorder;
+            oModel.Datedelivery = Row.Datedelivery;
+            oModel.Codegisal = Row.Codegisal;
+            oModel.Status = Row.Status;
+            oModel.Codemachine = Row.Codemachine;
+            oModel.Codeline = Row.Codeline;
+            oModel.Module = Row.Module;
+            oModel.Amount = Row.Amount;
+            oModel.Rem = Row.Rem;
+            oModel.Urgency = Row.Urgency;
+            oModel.Deleted = Row.Deleted;
+            oModel.Ordernumber = Row.Ordernumber;
+            await InvokeAsync(() => Files = oModel.GetFiles());
+        }
+        else
+        {
+            if (Mode.Button == ModeButton.Copy)
+            {
+                oModel.Id = Row.Id;
+                oModel.Name = Row.Name;
+                oModel.Codemachine = Row.Codemachine;
+                oModel.Codeline = Row.Codeline;
+                oModel.Module = Row.Module;
+                oModel.Amount = Row.Amount;
+                oModel.Rem = Row.Rem;
+                oModel.Urgency = Row.Urgency;
+                await InvokeAsync(() => Files = oModel.GetFiles());
+            }
+            oModel.Status = 1;
+            oModel.Amount = 1;
+            oModel.Urgency = 1;
+            oModel.Dateorder = DateTime.Now;
+            oModel.Datedelivery = DateTime.Now.AddMonths(3);
+            oModel.Deleted = "F";
+        }
+        oModel.GetDivisionID();
+
+        // Авто-обновление (проверка изменений)
+        LogsModel.Chat = oModel.Chat = oModel.GetDataChat(oModel.Id);
+        timer = new System.Threading.Timer(async (object? stateInfo) =>
+        {
+            if (oModel.Chat.Count < LogsModel.Chat.Count)
+            {
+                await Task.Run(() => oModel.Chat = LogsModel.Chat);
+                await InvokeAsync(StateHasChanged);
+                await InvokeAsync(ScrollToEnd);
+            }
+        }, null, 1000, 1000);/// Запуск через каждые несколько сек
+    }
+    protected override async void OnAfterRender(bool firstRender)/// После отрисовки компонента
+    {
+        if (firstRender)/// firstRender - Гарантирует однократное выполнение
+        {
+            ScrollToEnd();
+            await TrapFocusAsync();
+        }
+    }
+    private async Task TrapFocusAsync() => await JS.InvokeVoidAsync("trapFocus", firstFocusElement, lastFocusElement);///  Ловушка фокуса
+    private void ScrollToEnd() => JS.InvokeVoidAsync("scrollToEnd", new object[] { Reftextarea });
+    private bool Access()/// Доступ
+    {
+        if (Row == null || Mode.Button == ModeButton.Add || Mode.Button == ModeButton.Copy) { IsDisabledProvi = true; return true; }
+        if (Layout.Role == "DEVEL" && Mode.Button != ModeButton.View) { IsDisabledViewing = false; IsDisabled = false; IsDisabledStatus = false; IsDisabledProvi = false; return false; }
+        else if (Layout.Role == "PROVI" && Mode.Button != ModeButton.View && Row.Status != 8 && Row.Status != 9 && Row.Status != 5)
+        {
+            IsDisabledViewing = true;
+            IsDisabled = false;
+            IsDisabledStatus = false;
+            //IsDisabledProvi = Row.Status >= 3 ? true : false;/// После установки статуса «заказ размещен», поставщик не иметь возможность менять КОД GISAL и Дату поставки заказа.
+            if (Row.Status != 5) IsDisabledProvi = false;/// Возможность изменять дату во всех статусах кроме Заказ отгружен со склада
+            IsDisabledProvi = oModel.CounterOperations(Row.Id) == 2 ? true : false;/// Поставщик может сдвигать дату просроченных заказов 2 раза
+            StatusList = StatusList.Where(x => x.Key == 2 || x.Key == 3 || x.Key == 4 || x.Key == 5).ToDictionary(x => x.Key, x => x.Value);
+            StatusList = StatusList.Where(x => x.Key > Row.Status).ToDictionary(x => x.Key, x => x.Value);/// Поставщик может менять статус заказа только в одну сторону. Например, если поставщик установил статус «заказ размещен», у него нет возможности установить предыдущий статус.
+            return false;
+        }
+        else if (Mode.Button == ModeButton.View || Row.Status == 8 || Row.Status == 9 || (Layout.Role == "PROVI" && Row.Status == 5))
+        {
+            IsDisabledViewing = true;
+            IsDisabledStatus = true;
+            IsDisabledProvi = true;
+            return false;
+        }
+        else
+        {
+            IsDisabledViewing = Row.Status == 7 ? true : false;
+            StatusList = StatusList.Where(x => x.Key == 6 || x.Key == 8 || x.Key == 10).ToDictionary(x => x.Key, x => x.Value);
+            IsDisabledProvi = true; return true;
+        }
+    }
+    private string HideInputFile(int i) => i == numberOfInputFile - 1 ? "width: 130px;" : "display: none";/// Скрыть InputFile
+    private async Task AddInputFile(InputFileChangeEventArgs e)/// Добавление файлов
+    {
+        if (e.FileCount <= 5)
+        {
+            selectedFiles = e.GetMultipleFiles(5);
+            this.StateHasChanged();
+            if (selectedFiles != null)
+            {
+                numberOfInputFile++;
+                long size = 5 * 1024 * 1024;
+                foreach (IBrowserFile file in selectedFiles)
+                {
+                    if (file.Size <= size)
+                    {
+                        ListFiles.Add(file);
+                    }
+                    else
+                    {
+                        selectedFiles = null;
+                        await Toast.Notification(@<span>@localizer["Файл или общее количество файлов не должно превышать 5мб"]!</span>, ToastLevel.Info);
+                    }
+                }
+            }
+        }
+        else await Toast.Notification(@<span>@localizer["Общее количество файлов не должно превышать 5шт"]!</span>, ToastLevel.Info);
+    }
+    private async Task UploadFiles(Int64 idOrder)/// Загрузка файлов
+    {
+        selectedFiles = ListFiles;
+        if (selectedFiles != null && selectedFiles.Count != 0)
+        {
+            foreach (IBrowserFile file in selectedFiles)
+            {
+                byte[] buffer = new byte[file.Size];
+                using Stream stream = file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
+                MemoryStream ms = new();
+                await stream.CopyToAsync(ms);
+                buffer = ms.ToArray();
+                oModel.InsertFiles(buffer, file.Name, idOrder);
+                stream.Close();
+                ms.Close();
+                this.StateHasChanged();
+            }
+        }
+        if (Mode.Button == ModeButton.Copy)/// Если заказ копируется, существующие файлы записываем под новым id
+        {
+            foreach (var item in Files)
+            {
+                oModel.InsertFiles((byte[])item.Files, item.Nam, idOrder);
+            }
+        }
+    }
+    private async Task DownLoad(string fileName, string file) => await JS.InvokeVoidAsync("downloadFile", fileName, file);/// Скачивание одного файла
+    private async Task DownLoadFiles()/// Скачивание файлов
+    {
+        foreach (var item in Files)
+        {
+            byte[] bytes = (byte[])item.Files;
+            string fileName = item.Nam;
+            string file = $"data:application/vnd;base64,{Convert.ToBase64String(bytes)}";
+            await JS.InvokeVoidAsync("downloadFile", fileName, file);
+        }
+    }
+    private async Task DeleteFile(decimal id, string fileName)/// Удаление файла
+    {
+        if (Layout.Role == "ADMIN" || Layout.Role == "DEVEL")
+        {
+            IsOpenModalDialog = true;
+            Choice = true;/// Диалоговое окно с выбором
+            TitleModalDialog = "Удаление файла!";
+            RenderText =@<span>@localizer["Вы действительно хотие удалить файл"]?<br />@fileName</span>;
+            oModel.FileId = id;
+            oModel.Ordernumber = Row.Ordernumber;
+        }
+        else
+            await Toast.Notification(@<span>@localizer["Удалять файлы может только администратор"]!</span>, ToastLevel.Error);
+    }
+    private string ChekChangeProp()// Проверка свойств которые были изменены
+    {
+        oModel.Status = IsCancelOrder ? 9 : oModel.Status;
+        string action = null;
+        if (Mode.Button != ModeButton.Add)
+        {
+            List<string> list = new();
+            if (Row.Name != oModel.Name)
+                list.Add("наименование");
+            if (Row.Datedelivery != oModel.Datedelivery)
+                list.Add("дата поставки");
+            if (Row.Codegisal != oModel.Codegisal)
+                list.Add("код поставщика");
+            if (Row.Status != oModel.Status)
+                list.Add($"статус \"{oModel.GetStatusName()}\"");
+            if (Row.Codemachine != oModel.Codemachine)
+                list.Add("код машины");
+            if (Row.Codeline != oModel.Codeline)
+                list.Add("код линии");
+            if (Row.Module != oModel.Module)
+                list.Add("№ модуля");
+            if (Row.Amount != oModel.Amount)
+                list.Add("количество");
+            if (Row.Rem != oModel.Rem)
+                list.Add("примечание");
+            if (Row.Urgency != oModel.Urgency)
+                list.Add("срочность");
+            if (IsResetCounter)
+                list.Add("сброс счетчика продления даты поставки");
+            action = string.Join(", ", list.ToArray());
+        }
+        return action;
+    }
+    private async Task ModalOk()
+    {
+        oModel.CheckSMS();
+        oModel.Action = ChekChangeProp();
+        if (Mode.Button != ModeButton.View && Layout.Role != "PROVI")
+        {
+            if (IsResetCounter) oModel.CounterOperations(Row.Id, true);
+            Int64 idOrder = oModel.InsertUpdateOrder();
+            await UploadFiles(idOrder);/// Загрузка файлов
+            await OnClose.InvokeAsync(true);
+        }
+        else if (Layout.Role == "PROVI")
+        {
+            oModel.UpdateProvider();
+            await OnClose.InvokeAsync(true);
+        }
+        else
+            await OnClose.InvokeAsync(true);
+    }
+    private Task ModalCancel() { oModel.CheckSMS(); return OnClose.InvokeAsync(false); }
+    private async Task CloseModalDialog(bool accepted)
+    {
+        if (accepted)
+        {
+            switch (TitleModalDialog)
+            {
+                case "Удаление файла!":
+                    oModel.DeleteFile();
+                    Files.RemoveAll(x => x.Id == oModel.FileId);
+                    break;
+            }
+            IsOpenModalDialog = false;
+            await Toast.Notification(@<span>@localizer[BaseModel.MyMessage]!</span>, ToastLevel.Success);
+        }
+        else
+            IsOpenModalDialog = false;
+        //StateHasChanged();
+    }
+}

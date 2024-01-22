@@ -1,0 +1,79 @@
+﻿@page "/logs"
+@attribute [Authorize]
+@inject IStringLocalizer<Resource> localizer
+
+<div class="container-fluid position-sticky bg-light py-3 pt-5 border-start border-end border-bottom" style="z-index: 2;margin-top: -24px;top:56px;">
+    <div class="row img-thumbnail ms-1 mb-2" style="background-color: #fffcf4; margin-top: -45px;">
+        <div class="col col-md-10">
+            @if (lModel.Division != null)
+            {
+                string division = lModel.Division.ToString();
+                <label class="h5">@localizer["Заказчик"]: @localizer[division]</label>
+            }
+        </div>
+        @if (Layout.Role == "PROVI" || Layout.Role == "DEVEL")
+        {
+            <div class="col">
+                <select class="form-control" @onchange="@FilterDivision" value="@lModel.Divisionid">
+                    <option value="0">@localizer["Выберите заказчика"]</option>
+                    @foreach (var item in DivisionList)
+                    {
+                        <option value="@item.Key">@item.Value</option>
+                    }
+                </select>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="table-solid" style="margin-top: -2px;">
+    <table class="table table-sm table-striped table-hover align-middle caption-top">
+        <thead class="thead-primary position-sticky" style="z-index: 2;top:126px;">
+            <FilterLog Model="lModel" OnChange="@((List<LogsModel> filter) => Table = filter)"></FilterLog>
+            <tr>
+                <th class="ps-4">@localizer["Дата"] </th>
+                <th class="ps-4">@localizer["Имя пользователя"] </th>
+                <th colspan="2" class="ps-4"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Table == null)
+            {
+                <ToastNotification Data="Load" />
+            }
+            else if (Table.Count == 0)
+            {
+                <ToastNotification Data="NoData" />
+            }
+            else
+            {
+                @foreach (var item in Table)
+                {
+                    <tr>
+                        <td colspan="2">@item.Message</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    public List<LogsModel> Table { get; set; }
+    private Dictionary<Int64, string> DivisionList { get; set; }
+    LogsModel lModel = new();
+    [CascadingParameter] public MainLayout Layout { get; set; }
+    [CascadingParameter] private Task<AuthenticationState> AuthStat { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        Layout.Title = localizer["Журнал изменений"];
+        lModel.EndDate = DateTime.Now;
+        var auth = await AuthStat;
+        var id = Convert.ToInt32(auth.User.FindFirstValue(ClaimTypes.NameIdentifier));
+        lModel.GetDivisionID(id);
+        DivisionList = lModel.GetListDevisions();
+        await Task.Run(RefreshTable);
+    }
+    private void RefreshTable() => Table = lModel.GetDataLogs();
+    private void FilterDivision(ChangeEventArgs e) { lModel.Divisionid = Convert.ToDecimal(e.Value); RefreshTable(); }
+}

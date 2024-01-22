@@ -1,0 +1,53 @@
+﻿<tr style="border-style: hidden;">
+    <td>
+        <div class="input-group" style="max-width:450px;">
+            <span class="input-group-text"></span>
+            <input @bind-value="Model.Username" class="form-control" placeholder="..." @oninput="@FilterLogin"></input>
+        </div>
+    </td>
+    <td>
+        <div class="input-group" style="max-width:250px;">
+            <span class="input-group-text"></span>
+            <select class="form-control" @onchange="@FilterRole" value="@Model.Role">
+                <option value=""></option>
+                @foreach (var item in RoleList)
+                {
+                    <option value="@item.Value">@item.Value</option>
+                }
+            </select>
+        </div>
+    </td>
+    <td>
+        
+    </td>
+    <td>
+        <div>
+            <button @onclick="(()=>ClearFilters(new ChangeEventArgs {Value=string.Empty}))" class="form-control pt-3 fa-solid fa-filter-circle-xmark"></button>
+        </div>
+    </td>
+</tr>
+
+@code {
+    [Parameter] public EventCallback<List<UserModel>> OnChange { get; set; }
+    [Parameter] public UserModel Model { get; set; }
+    private Dictionary<Int64, string> RoleList { get; set; }
+    private Dictionary<string, string> DeleteList { get; set; }
+    [CascadingParameter] public MainLayout Layout { get; set; }
+    protected override void OnInitialized()
+    {
+        RoleList = Model.GetListRoles(Layout.Role);
+    }
+    private Task Filter() => OnChange.InvokeAsync(Model.GetDataUsers());
+    void FilterLogin(ChangeEventArgs e) { Model.Username = e.Value.ToString(); Filter(); }
+    void FilterRole(ChangeEventArgs e) { Model.Role = e.Value.ToString(); Filter(); }
+    void FilterDeleted(ChangeEventArgs e) { Model.DeletedFilter = e.Value.ToString(); Filter(); }
+    void ClearFilters(ChangeEventArgs e)
+    {
+        if (e.Value.ToString() == string.Empty)
+        {
+            Model.Username = string.Empty;
+            Model.Role = string.Empty;
+        }
+        Filter();
+    }
+}

@@ -1,0 +1,105 @@
+﻿@inject IStringLocalizer<Resource> localizer
+@if (Data == "Load")
+{
+    <div class="toast-container position-absolute p-3 bottom-0 end-0">
+        <div class="toast fade show shadow" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <span class="h5 oi oi-warning me-2" aria-hidden="true"></span>
+                <strong class="me-auto">@localizer["Сообщение"]</strong>
+                <small>@DateTime.Now.ToShortTimeString()</small>
+            </div>
+            <div class="toast-body">
+                <div class="spinner"></div>
+                <span class=" h6 fw-bold text-primary">@localizer["Загрузка данных"]....</span>
+            </div>
+        </div>
+    </div>
+}
+else if (Data == "NoData")
+{
+    <div class="toast-container position-absolute p-3 bottom-0 end-0">
+        <div class="toast fade show shadow" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <span class="h5 oi oi-warning me-2" aria-hidden="true"></span>
+                <strong class="me-auto">@localizer["Сообщение"]</strong>
+                <small>@DateTime.Now.ToShortTimeString()</small>
+            </div>
+            <div class="toast-body">
+                <span class="h6 fw-bold text-danger">@localizer["Данные отсутствуют"]!</span>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    @if (IsOpen)
+    {
+        <div class="toast-container position-fixed p-3 bottom-0 end-0">
+            <div class="toast fade show shadow" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header">
+                    <span class="h5 fa-solid fa-warning me-2" aria-hidden="true"></span>
+                    <strong class="me-auto">@localizer["Сообщение"]</strong>
+                    <small>@DateTime.Now.ToShortTimeString()</small>
+                    <button type="button" class="btn-close" aria-label="Close" @onclick="@Close"></button>
+                </div>
+                <div class="toast-body">
+                    @if (Level == ToastLevel.Info)
+                    {
+                        <span class="h6 fw-bold" style="color:#1572a1;">@Text</span>
+                    }
+                    else if (Level == ToastLevel.Success)
+                    {
+                        <span class="h6 fw-bold text-success">@Text</span>
+                    }
+                    else if (Level == ToastLevel.Warning)
+                    {
+                        <span class="h6 fw-bold" style="color:#ff5722;">@Text</span>
+                    }
+                    else if (Level == ToastLevel.Error)
+                    {
+                        <span class="h6 fw-bold text-danger">@Text</span>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+}
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public string Data { get; set; }
+    [Parameter] public RenderFragment Text { get; set; }
+    [Parameter] public ToastLevel Level { get; set; }
+    public enum ToastLevel
+    {
+        Info,
+        Success,
+        Warning,
+        Error
+    }
+    private void Close() => IsOpen = false;
+    public static class Toast
+    {
+        public static bool IsOpen { get; set; }
+        public static ToastLevel Level { get; set; }
+        public static RenderFragment RenderText { get; set; }
+
+        public static async Task Notification(RenderFragment text, ToastLevel level)
+        {
+            IsOpen = true;
+            RenderText = text;
+            Level = level;
+            await Task.Delay(5000);
+            IsOpen = false;
+        }
+        public static void NotificationString(string text, ToastLevel level)
+        {
+            IsOpen = true;
+            RenderText = (__builder) =>
+            {
+                <span>@text</span>;
+            };
+            Level = level;
+        }
+        
+    }
+}

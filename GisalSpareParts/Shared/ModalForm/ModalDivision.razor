@@ -1,0 +1,66 @@
+﻿@inject IStringLocalizer<Resource> localizer
+<EditForm Model="Model" OnValidSubmit="@ModalOk">
+    <DataAnnotationsValidator />
+    <div class="modal fade show" role="dialog" aria-modal="true" tabindex="-1" style="display:block;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!--Modal Header-->
+                <div class="modal-header text-center">
+                    <h4 class="modal-title w-100 font-weight-bold">@Title</h4>
+                    <button type="button" class="btn-close" aria-label="Close" @onclick="@ModalCancel"></button>
+                </div>
+                <!--Modal Body-->
+                <div class="modal-body mx-3">
+                    <div class="row mb-2">
+                        <div class="col ">
+                            <label>@localizer["Подразделение"]</label>
+                            <InputText class="form-control" @bind-Value="@Model.Name" />
+                            <ValidationMessage For="(() => Model.Name)" />
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col mb-2">
+                            <label>@localizer["Описание"]</label>
+                            <InputTextArea class="form-control" @bind-Value="@Model.Note" />
+                            <ValidationMessage For="(() => Model.Note)" />
+                        </div>
+                    </div>
+                </div>
+                <!--Modal Footer-->
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success" style="width: 110px;">@localizer["Сохранить"]</button>
+                    <button type="button" class="btn btn-secondary" style="width: 110px;" @onclick="@ModalCancel">@localizer["Отмена"]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</EditForm>
+<ToastNotification IsOpen="@Toast.IsOpen" Text="@Toast.RenderText" Level="@Toast.Level"></ToastNotification>
+@code {
+    [Parameter] public EventCallback<bool> OnClose { get; set; }
+    [Parameter] public string Title { get; set; }
+    [Parameter] public DivisionModel Row { get; set; }
+    DivisionModel Model = new();
+    protected override void OnInitialized()
+    {
+        if (Mode.Button == ModeButton.Edit)
+        {
+            Model.Id = Row.Id;
+            Model.Name = Row.Name;
+            Model.Note = Row.Note;
+            Model.Deleted = Row.Deleted;
+        }
+        else
+            Model.Deleted = "F";
+    }
+    private async Task ModalOk()
+    {
+        if (!Model.InsertOrUpdate())
+        {
+            await Toast.Notification(@<span>@localizer[BaseModel.MyMessage]!</span>, ToastLevel.Info);
+        }
+        else
+            await OnClose.InvokeAsync(true);
+    }
+    private Task ModalCancel() => OnClose.InvokeAsync(false);
+}
